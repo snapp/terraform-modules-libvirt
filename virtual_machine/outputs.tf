@@ -10,5 +10,5 @@ output "name" {
 
 output "ipv4_address" {
   description = "The ipv4 address of the virtual machine."
-  value       = libvirt_domain.virtual_machine[*].network_interface[0].addresses[0]
+  value       = libvirt_domain.virtual_machine.devices.interfaces[0].address
 }

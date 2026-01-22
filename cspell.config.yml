@@ -9,14 +9,32 @@ dictionaries:
   - overrides
 
 words:
-  - "cloudinit"
-  - "tflint"
-  - "dmacvicar"
-  - "gecos"
-  - "qcow"
-  - "tfvars"
-  - "vcpu"
-  - "vhost"
+  - CDPATH
+  - cdrom
+  - checkwinsize
+  - cloudinit
+  - Colour
+  - Containerfile
+  - dmacvicar
+  - ensurepip
+  - gecos
+  - gruntfuggly
+  - histappend
+  - libatomic
+  - nodocs
+  - procps
+  - qcow
+  - setopt
+  - shopt
+  - terrascan
+  - tflint
+  - tfsec
+  - tfupdate
+  - tfvars
+  - userns
+  - vcpu
+  - vhost
+  - virtio
 
 ignorePaths:
   - "**/.github/CODEOWNERS"

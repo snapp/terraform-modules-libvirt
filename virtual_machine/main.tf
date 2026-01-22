@@ -1,17 +1,17 @@
-# https://registry.terraform.io/providers/dmacvicar/libvirt/latest/docs
-
 terraform {
-  required_version = ">=1.0.0"
+  required_version = ">=1.5.0"
 
   required_providers {
+    # https://registry.terraform.io/providers/dmacvicar/libvirt/latest/docs
     libvirt = {
       source  = "dmacvicar/libvirt"
-      version = ">=0.7.6"
+      version = ">=0.9.1"
     }
 
+    # https://registry.terraform.io/providers/hashicorp/random/latest/docs
     random = {
       source  = "hashicorp/random"
-      version = ">=3.6.0"
+      version = ">=3.8.0"
     }
   }
 }
@@ -22,8 +22,6 @@ provider "libvirt" {
 
 resource "libvirt_cloudinit_disk" "cloudinit" {
   name = "${local.fqdn}-cloudinit.iso"
-
-  pool = var.hypervisor.storage_pool
 
   meta_data = <<-EOT
   #cloud-config
@@ -56,11 +54,33 @@ resource "libvirt_cloudinit_disk" "cloudinit" {
   EOF
 }
 
+resource "libvirt_volume" "cloudinit" {
+  name = "${local.fqdn}-cloudinit.iso"
+  pool = var.hypervisor.storage_pool
+
+  create = {
+    content = {
+      url = libvirt_cloudinit_disk.cloudinit.path
+    }
+  }
+}
+
 resource "libvirt_volume" "virtual_machine" {
-  name             = "${local.fqdn}-disk1.qcow2"
-  base_volume_name = var.virtual_machine.os_image
-  pool             = var.hypervisor.storage_pool
-  size             = local.vm_disk_size
+  name          = "${local.fqdn}-disk1.qcow2"
+  pool          = var.hypervisor.storage_pool
+  capacity      = local.vm_disk_size
+  capacity_unit = "bytes"
+  backing_store = {
+    path = var.virtual_machine.os_image
+    format = {
+      type = "qcow2"
+    }
+  }
+  target = {
+    format = {
+      type = "qcow2"
+    }
+  }
 }
 
 resource "libvirt_domain" "virtual_machine" {
@@ -68,34 +88,91 @@ resource "libvirt_domain" "virtual_machine" {
   description = local.description
   vcpu        = var.virtual_machine.cpu_count
   memory      = local.vm_ram_size
-
-  cloudinit = libvirt_cloudinit_disk.cloudinit.id
+  memory_unit = "MiB"
+  type        = "kvm"
 
   autostart = true
+  running   = true
 
-  qemu_agent = true
-
-  network_interface {
-    bridge         = var.hypervisor.network_bridge
-    mac            = var.virtual_machine.mac_address
-    wait_for_lease = true
+  os = {
+    type      = "hvm"
+    type_arch = "x86_64"
   }
 
-  console {
-    type        = "pty"
-    target_port = "0"
-    target_type = "serial"
-  }
-
-  cpu {
+  cpu = {
     mode = var.virtual_machine.cpu_mode
   }
 
-  disk {
-    volume_id = libvirt_volume.virtual_machine.id
-  }
+  devices = {
+    disks = [
+      {
+        driver = {
+          name = "qemu"
+          type = "qcow2"
+        }
 
-  graphics {
-    type = "vnc"
+        source = {
+          volume = {
+            pool   = var.hypervisor.storage_pool
+            volume = libvirt_volume.virtual_machine.name
+          }
+        }
+
+        target = {
+          dev = "vda"
+          bus = "virtio"
+        }
+      },
+      {
+        device    = "cdrom"
+        read_only = true
+        serial    = "cloudinit"
+
+        driver = {
+          name = "qemu"
+          type = "raw"
+        }
+
+        source = {
+          volume = {
+            pool   = var.hypervisor.storage_pool
+            volume = libvirt_cloudinit_disk.cloudinit.name
+          }
+        }
+
+        target = {
+          dev = "hdd"
+          bus = "ide"
+        }
+      }
+    ]
+
+    interfaces = [
+      {
+        mac = {
+          address = var.virtual_machine.mac_address
+        }
+
+        source = {
+          bridge = {
+            bridge = var.hypervisor.network_bridge
+          }
+        }
+
+        wait_for_ip = {}
+      }
+    ]
+
+    consoles = [{
+      target = {
+        type = "serial"
+      }
+    }]
+
+    graphics = [{
+      vnc = {
+        auto_port = true
+      }
+    }]
   }
 }
