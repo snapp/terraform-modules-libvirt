@@ -1,10 +1,10 @@
 terraform {
-  required_version = ">=1.0.0"
+  required_version = ">=1.5.0"
 }
 
 # Simple example with no `terraform.tfvars` overrides
 module "test1" {
-  source = "git::https://github.com/snapp/terraform-modules-libvirt.git//virtual_machine?ref=96644c5"
+  source = "git::https://github.com/snapp/terraform-modules-libvirt.git//virtual_machine?ref=0ff5af9"
 
   hypervisor      = var.hypervisor
   virtual_machine = var.virtual_machine
@@ -12,7 +12,7 @@ module "test1" {
 
 # Example that merges the `name`, `hostname`, `domain`, and description variables
 module "test2" {
-  source = "git::https://github.com/snapp/terraform-modules-libvirt.git//virtual_machine?ref=96644c5"
+  source = "git::https://github.com/snapp/terraform-modules-libvirt.git//virtual_machine?ref=0ff5af9"
 
   hypervisor = var.hypervisor
 
@@ -26,7 +26,7 @@ module "test2" {
 
 # Example where no root password is set
 module "test3" {
-  source = "git::https://github.com/snapp/terraform-modules-libvirt.git//virtual_machine?ref=96644c5"
+  source = "git::https://github.com/snapp/terraform-modules-libvirt.git//virtual_machine?ref=0ff5af9"
 
   hypervisor = var.hypervisor
 
@@ -37,7 +37,7 @@ module "test3" {
 
 # Example where no user modifications are performed
 module "test4" {
-  source = "git::https://github.com/snapp/terraform-modules-libvirt.git//virtual_machine?ref=96644c5"
+  source = "git::https://github.com/snapp/terraform-modules-libvirt.git//virtual_machine?ref=0ff5af9"
 
   hypervisor = var.hypervisor
 
