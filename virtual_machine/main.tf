@@ -158,8 +158,6 @@ resource "libvirt_domain" "virtual_machine" {
             bridge = var.hypervisor.network_bridge
           }
         }
-
-        wait_for_ip = {}
       }
     ]
 
