@@ -1,0 +1,56 @@
+# Allow Override of Red Hat Universal Base Image (UBI) Version
+ARG UBI_VERSION=10
+
+# Red Hat Universal Base Image (UBI)
+FROM registry.access.redhat.com/ubi${UBI_VERSION}:latest AS terraform-workspace
+
+# Allow Override of ASDF Version
+ARG ASDF_VERSION=v0.18.0
+
+# Allow Override of Runtime User Details
+ARG RUNTIME_USER=terraform
+ARG RUNTIME_USER_COMMENT='Terraform Service Account'
+ARG RUNTIME_USER_HOME=/workspaces
+ARG RUNTIME_UID=1000
+ARG RUNTIME_GID=1000
+
+# Setup Runtime User
+RUN printf 'Setup Runtime User\n'; \
+    groupadd --gid "${RUNTIME_GID}" "${RUNTIME_USER}" && \
+    useradd --create-home \
+            --home-dir "${RUNTIME_USER_HOME}" \
+            --comment "${RUNTIME_USER_COMMENT}" \
+            --uid "${RUNTIME_UID}" \
+            --gid "${RUNTIME_GID}" \
+            "${RUNTIME_USER}"
+
+# Install Developer Tools
+RUN printf 'Install Developer Tools\n'; \
+    dnf install -y \
+                --setopt install_weak_deps=false \
+                --nodocs \
+                    bash-completion \
+                    git \
+                    iputils \
+                    jq \
+                    libatomic \
+                    procps-ng \
+                    unzip && \
+    dnf clean all && \
+    python3 -m ensurepip --upgrade && \
+    python3 -m pip install --upgrade pip && \
+    curl -L "https://github.com/asdf-vm/asdf/releases/download/${ASDF_VERSION}/asdf-${ASDF_VERSION}-linux-amd64.tar.gz" | tar xzf - -C /usr/local/bin
+
+# Switch to Runtime User
+USER ${RUNTIME_USER}
+WORKDIR ${RUNTIME_USER_HOME}
+
+# Configure Runtime User Environment
+COPY .devcontainer/bashrc ${RUNTIME_USER_HOME}/.bashrc
+COPY .devcontainer/tool-versions ${RUNTIME_USER_HOME}/.tool-versions
+RUN printf 'Configure Runtime User\n'; \
+    source "${RUNTIME_USER_HOME}/.bashrc" && \
+    while read tool version; do \
+        asdf plugin add "${tool}"; \
+        asdf install "${tool}" "${version}"; \
+    done < "${RUNTIME_USER_HOME}/.tool-versions"
