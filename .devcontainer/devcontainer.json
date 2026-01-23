@@ -58,7 +58,7 @@
   "privileged": false,
   "remoteUser": "terraform",
   "runArgs": [
-    "--name=terraform-modules-openstack",
+    "--name=terraform-modules-libvirt",
     "--userns=keep-id",
     "--network=host",
     "--env-file=${localWorkspaceFolder}/.devcontainer/.env",
