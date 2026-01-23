@@ -8,6 +8,12 @@ terraform {
       version = ">=0.9.1"
     }
 
+    # https://registry.terraform.io/providers/ansible/ansible/latest/docs
+    ansible = {
+      version = "~> 1.3.0"
+      source  = "ansible/ansible"
+    }
+
     # https://registry.terraform.io/providers/hashicorp/random/latest/docs
     random = {
       source  = "hashicorp/random"
@@ -172,5 +178,18 @@ resource "libvirt_domain" "virtual_machine" {
         auto_port = true
       }
     }]
+  }
+}
+
+# https://registry.terraform.io/providers/ansible/ansible/latest/docs/resources/host
+resource "ansible_host" "virtual_machine" {
+  count  = var.virtual_machine.enable_ansible_inventory ? 1 : 0
+  name   = local.fqdn
+  groups = length(coalesce(var.virtual_machine.groups, [])) > 0 ? var.virtual_machine.groups : ["terraform_managed"]
+  variables = {
+    instance_name = local.instance_name
+    hostname      = local.hostname
+    domain        = local.domain
+    description   = local.description
   }
 }

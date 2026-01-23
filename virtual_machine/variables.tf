@@ -27,6 +27,7 @@ variable "virtual_machine" {
     disk_size     = number
     mac_address   = string
     domain        = string
+    groups        = list(string)
     hostname      = string
     os_image      = string
     ram_size      = number
@@ -38,6 +39,7 @@ variable "virtual_machine" {
       ssh_public_key = string
       sudo_rule      = string
     })
+    enable_ansible_inventory = bool
   })
   description = <<-EOT
     virtual_machine = {
@@ -49,6 +51,7 @@ variable "virtual_machine" {
       disk_size : "The virtual machine disk size in GB (e.g. 20)."
       mac_address : "The optional MAC address of the virtual machine's primary network interface."
       domain : "The optional network domain used for constructing a fqdn for the virtual machine."
+      groups : "An array of Ansible inventory group names that the virtual machine should be associated with."
       hostname : "The optional short (unqualified) hostname of the instance to be created."
       os_image : "Operating System disk image for the instance to be created (as named in the hypervisor.storage_pool)."
       ram_size : "The amount of memory allocated to the virtual machine in GB (e.g. 4)."
@@ -60,6 +63,7 @@ variable "virtual_machine" {
         ssh_public_key : "SSH public key used to access the instance."
         sudo_rule : "Sudo rule applied to the user used to access the instance (e.g. 'ALL=(ALL) ALL')."
       }
+      enable_ansible_inventory : "Whether to create an Ansible inventory host entry for the virtual machine."
     }
   EOT
 }

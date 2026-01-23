@@ -11,7 +11,9 @@ locals {
 
   hostname = coalesce(var.virtual_machine.hostname, local.instance_name)
 
-  fqdn = var.virtual_machine.domain != "" ? "${lower(local.hostname)}.${lower(var.virtual_machine.domain)}" : "${lower(local.hostname)}.local"
+  domain = try(coalesce(var.virtual_machine.domain, ""), "") != "" ? var.virtual_machine.domain : "local"
+
+  fqdn = "${lower(local.hostname)}.${lower(local.domain)}"
 
   description = try(coalesce(var.virtual_machine.description, ""), "") != "" ? var.virtual_machine.description : <<-EOT
     id: ${local.instance_name}
