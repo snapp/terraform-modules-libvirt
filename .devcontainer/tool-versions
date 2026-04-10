@@ -1,12 +1,7 @@
-# https://github.com/asdf-vm/asdf-plugins?tab=readme-ov-file#plugin-list
-
-checkov        3.2.497
-packer         1.14.3
+checkov        3.2.508
 pre-commit     4.5.1
-terraform      1.14.3
+terraform      1.14.6
 terraform-docs 0.21.0
-terrascan      1.19.9
-tflint         0.60.0
-tfsec          1.28.14
+tflint         0.61.0
 tfupdate       0.9.3
-trivy          0.68.2
+trivy          0.69.3

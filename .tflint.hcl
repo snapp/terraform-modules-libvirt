@@ -28,9 +28,5 @@ rule "terraform_unused_required_providers" {
 
 rule "terraform_naming_convention" {
   enabled = true
-  format  = "none"
-
-  locals {
-    format = "snake_case"
-  }
+  format  = "snake_case"
 }
