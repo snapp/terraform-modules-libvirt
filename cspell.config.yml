@@ -13,24 +13,35 @@ words:
   - cdrom
   - checkwinsize
   - cloudinit
+  - COLORTERM
   - Colour
   - Containerfile
+  - diffutils
   - dmacvicar
   - ensurepip
   - gecos
   - gruntfuggly
+  - HEALTHCHECK
   - histappend
+  - HISTCONTROL
+  - HISTFILESIZE
+  - HISTSIZE
+  - HISTTIMEFORMAT
+  - ignoredups
+  - ignorespace
+  - iputils
   - libatomic
+  - myuser
   - nodocs
   - procps
   - qcow
   - setopt
   - shopt
-  - terrascan
+  - snapp
   - tflint
-  - tfsec
   - tfupdate
   - tfvars
+  - truecolor
   - userns
   - vcpu
   - vhost

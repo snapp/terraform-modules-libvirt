@@ -8,8 +8,8 @@ fi
 # Add $HOME to cd path
 export CDPATH=".:${HOME}:/workspaces"
 
-# Add asdf shims to path
-export PATH="${HOME}/.asdf/shims:${HOME}/.local/bin:${PATH}"
+# Activate mise
+eval "$(mise activate bash)"
 
 # Short-List
 alias ls='ls --color=auto'
