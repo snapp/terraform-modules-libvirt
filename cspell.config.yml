@@ -36,6 +36,8 @@ words:
   - ignorespace
   - iputils
   - libatomic
+  - marp
+  - Marp
   - myuser
   - nodocs
   - procps

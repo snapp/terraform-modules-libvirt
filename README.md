@@ -8,6 +8,9 @@ This monorepo of [Terraform](https://www.terraform.io) modules is intended as a 
 - [virtual_machine](virtual_machine/README.md)
     - [example-multiple_virtual_machines](virtual_machine/examples/example-multiple_virtual_machines/README.md)
 
+## Documentation
+- [virtual_machine module — overview presentation](docs/virtual-machine-module.md) (Marp)
+
 
 ## Licensing
 
