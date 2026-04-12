@@ -9,6 +9,7 @@ dictionaries:
   - overrides
 
 words:
+  - addrs
   - CDPATH
   - cdrom
   - checkwinsize
@@ -18,6 +19,7 @@ words:
   - Containerfile
   - diffutils
   - dmacvicar
+  - domifaddr
   - ensurepip
   - gecos
   - gruntfuggly
@@ -27,6 +29,8 @@ words:
   - HISTFILESIZE
   - HISTSIZE
   - HISTTIMEFORMAT
+  - hwaddr
+  - iface
   - ignoredups
   - ignorespace
   - iputils
@@ -35,6 +39,7 @@ words:
   - nodocs
   - procps
   - qcow
+  - SCAP
   - setopt
   - shopt
   - snapp
@@ -45,6 +50,8 @@ words:
   - userns
   - vcpu
   - vhost
+  - virsh
+  - virt
   - virtio
 
 ignorePaths:

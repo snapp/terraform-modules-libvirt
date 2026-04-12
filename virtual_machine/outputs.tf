@@ -8,7 +8,12 @@ output "name" {
   value       = local.instance_name
 }
 
-output "ipv4_address" {
-  description = "The ipv4 address of the virtual machine."
-  value       = libvirt_domain.virtual_machine.devices.interfaces[0].address
+output "virtual_machine" {
+  description = "The libvirt domain resource representing the virtual machine."
+  value       = libvirt_domain.virtual_machine
+}
+
+output "ansible_host" {
+  description = "The Ansible inventory host resource, or null if enable_ansible_inventory is false."
+  value       = one(ansible_host.virtual_machine)
 }

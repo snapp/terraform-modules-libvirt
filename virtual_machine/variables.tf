@@ -25,7 +25,7 @@ variable "virtual_machine" {
     cpu_mode      = string
     description   = string
     disk_size     = number
-    mac_address   = string
+    mac_address   = optional(string, null)
     domain        = string
     groups        = list(string)
     hostname      = string
@@ -40,6 +40,8 @@ variable "virtual_machine" {
       sudo_rule      = string
     })
     enable_ansible_inventory = bool
+    ansible_host_override    = optional(bool, false)
+    extra_vars               = optional(map(string), {})
   })
   description = <<-EOT
     virtual_machine = {
@@ -64,6 +66,8 @@ variable "virtual_machine" {
         sudo_rule : "Sudo rule applied to the user used to access the instance (e.g. 'ALL=(ALL) ALL')."
       }
       enable_ansible_inventory : "Whether to create an Ansible inventory host entry for the virtual machine."
+      ansible_host_override : "When true, injects ansible_host=<VM IPv4> into the inventory host vars so Ansible connects by IP instead of resolving the FQDN (default: false)."
+      extra_vars : "An optional map of additional Ansible inventory host variables to merge into the host entry (e.g. { ansible_user = \"myuser\", my_custom_var = \"value\" })."
     }
   EOT
 }
