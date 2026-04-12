@@ -2,16 +2,27 @@ variable "hypervisor" {
   nullable = false
   type = object({
     fqdn           = string
-    network_bridge = string
     storage_pool   = string
     ssh_user       = string
+    network_bridge = optional(string, null)
+    network_name   = optional(string, null)
+    nat_cidr       = optional(string, "192.168.122.0/24")
   })
+  validation {
+    condition = (
+      var.hypervisor.network_bridge != null ||
+      var.hypervisor.network_name != null
+    )
+    error_message = "At least one of network_bridge or network_name must be set."
+  }
   description = <<-EOT
     hypervisor = {
       fqdn : "The fully qualified hostname of the hypervisor where virtual machine instances are run."
-      network_bridge : "The hypervisor network bridge used to connect to the virtual machine's primary network interface."
       storage_pool : "The hypervisor storage pool where virtual machine images are stored."
       ssh_user : "The username used to SSH to the hypervisor and manage instances."
+      network_bridge : "Host bridge device for the VM's primary NIC (bridge mode). Can be combined with network_name for a dual-NIC VM."
+      network_name : "Libvirt virtual network name for NAT/routed mode. When set without network_bridge, ansible_ssh_common_args is automatically injected with a ProxyJump through the hypervisor."
+      nat_cidr : "CIDR of the libvirt NAT network (default: 192.168.122.0/24). Used in dual-NIC mode to exclude NAT-assigned IPs when selecting the bridge IP for ansible_host."
     }
   EOT
 }

@@ -153,19 +153,7 @@ resource "libvirt_domain" "virtual_machine" {
       }
     ]
 
-    interfaces = [
-      {
-        mac = var.virtual_machine.mac_address != null ? {
-          address = var.virtual_machine.mac_address
-        } : null
-
-        source = {
-          bridge = {
-            bridge = var.hypervisor.network_bridge
-          }
-        }
-      }
-    ]
+    interfaces = local.vm_interfaces
 
     consoles = [{
       target = {
@@ -203,15 +191,18 @@ resource "terraform_data" "wait_for_ip" {
 
   provisioner "local-exec" {
     command = <<-EOF
-      # Phase 1: wait for any non-loopback IPv4 address to appear via the guest agent.
-      # The loopback (127.x.x.x) is excluded because it appears as soon as the guest
-      # agent starts, before the primary NIC has obtained a real address.
+      # Phase 1: wait for the target IPv4 address to appear via the guest agent.
+      # Loopback (127.x.x.x) is always excluded. In dual-NIC mode the NAT prefix
+      # ("${local.nat_addr_prefix}") is also excluded so we wait for the bridge IP.
+      # An empty nat prefix means no NAT filtering (bridge-only or NAT-only mode).
       echo "Waiting for ${local.instance_name} to obtain an IP address..."
       elapsed=0
       until ssh -o BatchMode=yes -o StrictHostKeyChecking=no \
           ${var.hypervisor.ssh_user}@${var.hypervisor.fqdn} \
           "virsh --connect qemu:///system domifaddr ${local.instance_name} --source agent 2>/dev/null \
-           | awk '/ipv4/ && !/127\./ {print \$4}' | grep -q ."; do
+           | awk -v nat='${local.nat_addr_prefix}' \
+               '/ipv4/ && !/127\./ && (nat == \"\" || index(\$4, nat) != 1) {print \$4}' \
+           | grep -q ."; do
         if [ "$elapsed" -ge 600 ]; then
           echo "Timed out after 600s waiting for ${local.instance_name} to get an IP address"
           exit 1
@@ -220,11 +211,13 @@ resource "terraform_data" "wait_for_ip" {
         elapsed=$((elapsed + 10))
       done
 
-      # Extract the first non-loopback IPv4 address for use in phase 2.
+      # Extract the target IPv4 address for use in phase 2 (same NAT filtering as above).
       IP=$(ssh -o BatchMode=yes -o StrictHostKeyChecking=no \
           ${var.hypervisor.ssh_user}@${var.hypervisor.fqdn} \
           "virsh --connect qemu:///system domifaddr ${local.instance_name} --source agent 2>/dev/null \
-           | awk '/ipv4/ && !/127\./ {print \$4}' | head -1 | cut -d/ -f1")
+           | awk -v nat='${local.nat_addr_prefix}' \
+               '/ipv4/ && !/127\./ && (nat == \"\" || index(\$4, nat) != 1) {print \$4}' \
+           | head -1 | cut -d/ -f1")
 
       # Phase 2: wait for SSH port 22 to be reachable from the hypervisor.
       # This ensures the VM has survived any first-boot reboot (e.g. OpenSCAP remediation)
@@ -268,14 +261,24 @@ resource "ansible_host" "virtual_machine" {
       description   = local.description
     },
     var.virtual_machine.ansible_host_override ? {
+      # In dual-NIC mode, cidrcontains excludes the NAT interface's address so Ansible
+      # connects via the bridge IP. In single-NIC mode the CIDR filter is not applied.
       ansible_host = one([
         for addr in flatten([
           for iface in data.libvirt_domain_interface_addresses.virtual_machine[0].interfaces
           : iface.addrs
         ])
         : addr.addr
-        if addr.type == "ipv4" && !startswith(addr.addr, "127.")
+        if addr.type == "ipv4"
+        && !startswith(addr.addr, "127.")
+        && (!local.dual_nic || !startswith(addr.addr, local.nat_addr_prefix))
       ])
+    } : {},
+    # In NAT-only mode the VM has no directly routable address; inject a ProxyJump so
+    # Ansible tunnels through the hypervisor. In bridge or dual-NIC mode the bridge IP
+    # is directly reachable, so no ProxyJump is needed. extra_vars can override if needed.
+    local.nat_only && var.virtual_machine.ansible_host_override ? {
+      ansible_ssh_common_args = "-o ProxyJump=${var.hypervisor.ssh_user}@${var.hypervisor.fqdn}"
     } : {},
     var.virtual_machine.extra_vars
   )
