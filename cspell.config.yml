@@ -13,6 +13,7 @@ words:
   - CDPATH
   - cdrom
   - checkwinsize
+  - cidrcontains
   - cloudinit
   - COLORTERM
   - Colour
@@ -50,6 +51,7 @@ words:
   - userns
   - vcpu
   - vhost
+  - virbr
   - virsh
   - virt
   - virtio
