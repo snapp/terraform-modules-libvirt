@@ -21,6 +21,7 @@ words:
   - diffutils
   - dmacvicar
   - domifaddr
+  - endfor
   - ensurepip
   - gecos
   - gruntfuggly
@@ -40,8 +41,10 @@ words:
   - Marp
   - myuser
   - nodocs
+  - NOPASSWD
   - procps
   - qcow
+  - runcmd
   - SCAP
   - setopt
   - shopt

@@ -29,35 +29,19 @@ provider "libvirt" {
 resource "libvirt_cloudinit_disk" "cloudinit" {
   name = "${local.fqdn}-cloudinit.iso"
 
-  meta_data = <<-EOT
-  #cloud-config
-  instance-id: ${local.instance_name}
-  local-hostname: ${local.hostname}
-  EOT
+  meta_data = templatefile("${path.module}/templates/metadata.yml.tftpl", {
+    instance_name = local.instance_name
+    hostname      = local.hostname
+  })
 
-  user_data = <<-EOF
-  #cloud-config
-  hostname: ${local.hostname}
-  fqdn: ${local.fqdn}
-  prefer_fqdn_over_hostname: true
-  ${var.virtual_machine.user != null || try(coalesce(var.virtual_machine.root_password, ""), "") != "" ? "users:" : ""}
-  ${var.virtual_machine.user != null ? <<-EOT
-      - name: ${var.virtual_machine.user.username}
-        gecos: ${var.virtual_machine.user.display_name}
-        hashed_passwd: ${var.virtual_machine.user.password}
-        lock-passwd: false
-        sudo: ${var.virtual_machine.user.sudo_rule}
-        ssh_authorized_keys:
-          - ${var.virtual_machine.user.ssh_public_key}
-    EOT
-  : ""}
-  ${try(coalesce(var.virtual_machine.root_password, ""), "") != "" ? <<-EOT
-      - name: root
-        hashed_passwd: ${var.virtual_machine.root_password}
-        lock-passwd: false
-    EOT
-: ""}
-  EOF
+  user_data = templatefile("${path.module}/templates/userdata.yml.tftpl", {
+    hostname      = local.hostname
+    fqdn          = local.fqdn
+    create_users  = var.virtual_machine.user != null || try(coalesce(var.virtual_machine.root_password, ""), "") != ""
+    user          = var.virtual_machine.user
+    root_password = try(coalesce(var.virtual_machine.root_password, ""), "")
+    runcmd        = coalesce(var.virtual_machine.runcmd, [])
+  })
 }
 
 resource "libvirt_volume" "cloudinit" {

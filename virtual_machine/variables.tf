@@ -30,55 +30,74 @@ variable "hypervisor" {
 variable "virtual_machine" {
   nullable = false
   type = object({
-    name          = string
-    contact       = string
-    cpu_count     = number
-    cpu_mode      = string
-    description   = string
-    disk_size     = number
-    mac_address   = optional(string, null)
-    domain        = string
-    groups        = list(string)
-    hostname      = string
-    os_image      = string
-    ram_size      = number
-    root_password = string
-    user = object({
+    # Identity
+    name        = optional(string)
+    contact     = string
+    description = optional(string)
+    hostname    = optional(string)
+    domain      = optional(string)
+
+    # Compute
+    cpu_count = optional(number, 2)
+    cpu_mode  = optional(string, "host-passthrough")
+    ram_size  = optional(number, 4)
+    disk_size = number
+
+    # Storage
+    os_image = string
+
+    # Network
+    mac_address = optional(string, null)
+
+    # User management
+    root_password = optional(string)
+    user = optional(object({
       username       = string
       display_name   = string
-      password       = string
+      password       = optional(string)
+      homedir        = optional(string)
       ssh_public_key = string
-      sudo_rule      = string
-    })
-    enable_ansible_inventory = bool
+      sudo_rule      = optional(string)
+      uid            = optional(number)
+    }))
+
+    # First-boot commands
+    runcmd = optional(list(string), [])
+
+    # Ansible inventory
+    groups                   = optional(list(string), [])
+    enable_ansible_inventory = optional(bool, true)
     ansible_host_override    = optional(bool, false)
     extra_vars               = optional(map(string), {})
   })
   description = <<-EOT
     virtual_machine = {
-      name : "The name of the virtual machine instance when listed on the hypervisor."
-      contact : "The primary contact for the resources, this should be the username and must be able to receive email by appending your domain to it (e.g. \$\{contact}@example.com) (this person can explain what/why)."
-      cpu_count : "The number of virtual CPUs allocated to the virtual machine (e.g. 2)."
-      cpu_mode : "The virtual machine's CPU mode (e.g. 'host-passthrough')."
-      description: "The optional description of the virtual machine instance when listed on the hypervisor."
-      disk_size : "The virtual machine disk size in GB (e.g. 20)."
+      name : "The optional name of the virtual machine instance. Defaults to a generated name based on contact."
+      contact : "The primary contact for the resources, this should be the username and must be able to receive email by appending your domain to it (e.g. \$\{contact}@example.com)."
+      description : "The optional description of the virtual machine instance."
+      hostname : "The optional short (unqualified) hostname of the instance. Defaults to the instance name."
+      domain : "The optional network domain used for constructing a fqdn for the virtual machine (default: local)."
+      cpu_count : "The number of virtual CPUs allocated to the virtual machine (default: 2)."
+      cpu_mode : "The virtual machine's CPU mode (default: host-passthrough)."
+      ram_size : "The amount of memory allocated to the virtual machine in GB (default: 4)."
+      disk_size : "The virtual machine OS disk size in GB (e.g. 20)."
+      os_image : "Operating System disk image for the instance (as named in the hypervisor.storage_pool)."
       mac_address : "The optional MAC address of the virtual machine's primary network interface."
-      domain : "The optional network domain used for constructing a fqdn for the virtual machine."
-      groups : "An array of Ansible inventory group names that the virtual machine should be associated with."
-      hostname : "The optional short (unqualified) hostname of the instance to be created."
-      os_image : "Operating System disk image for the instance to be created (as named in the hypervisor.storage_pool)."
-      ram_size : "The amount of memory allocated to the virtual machine in GB (e.g. 4)."
-      root_password : "Password for the root user of the instance (plain-text or hashed)."
+      root_password : "The optional hashed password for the root user."
       user = {
         username : "User used to access the instance."
         display_name : "Full name of the user used to access the instance."
-        password : "Password for user used to access the instance (plain-text or hashed)."
+        password : "The optional hashed password for the user."
+        homedir : "The optional home directory for the user (defaults to /home/<username>)."
         ssh_public_key : "SSH public key used to access the instance."
-        sudo_rule : "Sudo rule applied to the user used to access the instance (e.g. 'ALL=(ALL) ALL')."
+        sudo_rule : "The optional sudo rule applied to the user (e.g. 'ALL=(ALL) NOPASSWD:ALL')."
+        uid : "The optional user ID of the user."
       }
-      enable_ansible_inventory : "Whether to create an Ansible inventory host entry for the virtual machine."
+      runcmd : "An optional list of shell commands to run on first boot via cloud-init runcmd (e.g. [\"ipa-client-install --unattended ...\"])."
+      groups : "An optional list of Ansible inventory group names for the virtual machine (default: [])."
+      enable_ansible_inventory : "Whether to create an Ansible inventory host entry for the virtual machine (default: true)."
       ansible_host_override : "When true, injects ansible_host=<VM IPv4> into the inventory host vars so Ansible connects by IP instead of resolving the FQDN (default: false)."
-      extra_vars : "An optional map of additional Ansible inventory host variables to merge into the host entry (e.g. { ansible_user = \"myuser\", my_custom_var = \"value\" })."
+      extra_vars : "An optional map of additional Ansible inventory host variables to merge into the host entry."
     }
   EOT
 }

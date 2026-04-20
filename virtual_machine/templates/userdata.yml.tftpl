@@ -1,0 +1,42 @@
+#cloud-config
+prefer_fqdn_over_hostname: true
+%{ if hostname != "" ~}
+hostname: ${hostname}
+fqdn: ${fqdn}
+%{ endif ~}
+%{ if create_users ~}
+users:
+%{ if user != null ~}
+  - name: "${user.username}"
+    gecos: "${user.display_name}"
+%{ if try(user.password, "") != "" ~}
+    hashed_passwd: "${user.password}"
+%{ endif ~}
+    lock_passwd: false
+%{ if try(user.sudo_rule, "") != "" ~}
+    sudo: "${user.sudo_rule}"
+%{ else ~}
+    sudo: false
+%{ endif ~}
+%{ if user.uid != null ~}
+    uid: ${user.uid}
+    gid: ${user.uid}
+%{ endif ~}
+%{ if try(user.homedir, "") != "" ~}
+    homedir: "${user.homedir}"
+%{ endif ~}
+    ssh_authorized_keys:
+      - "${user.ssh_public_key}"
+%{ endif ~}
+%{ if root_password != "" ~}
+  - name: root
+    hashed_passwd: "${root_password}"
+    lock_passwd: false
+%{ endif ~}
+%{ endif ~}
+%{ if length(runcmd) > 0 ~}
+runcmd:
+%{ for cmd in runcmd ~}
+  - ${cmd}
+%{ endfor ~}
+%{ endif ~}
