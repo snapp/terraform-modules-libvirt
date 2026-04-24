@@ -5,7 +5,7 @@ terraform {
 # Bridge mode — VM gets a directly routable LAN IP.
 # Ansible connects by FQDN; no ansible_host_override needed if DNS resolves the VM.
 module "bridge" {
-  source = "git::https://github.com/snapp/terraform-modules-libvirt.git//virtual_machine?ref=6f88ebe"
+  source = "git::https://github.com/snapp/terraform-modules-libvirt.git//virtual_machine?ref=1462adf"
 
   hypervisor = merge(var.hypervisor, {
     network_bridge = var.hypervisor.network_bridge
@@ -26,7 +26,7 @@ module "bridge" {
 # Bridge mode with ansible_host_override — Ansible connects by IP instead of FQDN.
 # Useful when DNS resolution of the VM hostname is unreliable or not yet propagated.
 module "bridge_with_ip" {
-  source = "git::https://github.com/snapp/terraform-modules-libvirt.git//virtual_machine?ref=6f88ebe"
+  source = "git::https://github.com/snapp/terraform-modules-libvirt.git//virtual_machine?ref=1462adf"
 
   hypervisor = merge(var.hypervisor, {
     network_bridge = var.hypervisor.network_bridge
@@ -48,7 +48,7 @@ module "bridge_with_ip" {
 # hypervisor's network stack so the VM inherits the hypervisor's network access.
 # ansible_ssh_common_args is automatically injected with a ProxyJump through the hypervisor.
 module "nat" {
-  source = "git::https://github.com/snapp/terraform-modules-libvirt.git//virtual_machine?ref=6f88ebe"
+  source = "git::https://github.com/snapp/terraform-modules-libvirt.git//virtual_machine?ref=1462adf"
 
   hypervisor = merge(var.hypervisor, {
     network_bridge = null
@@ -70,7 +70,7 @@ module "nat" {
 # NAT NIC (eth1) gives the VM access to networks reachable from the hypervisor.
 # Ansible connects directly via the bridge IP; no ProxyJump is injected.
 module "dual_nic" {
-  source = "git::https://github.com/snapp/terraform-modules-libvirt.git//virtual_machine?ref=6f88ebe"
+  source = "git::https://github.com/snapp/terraform-modules-libvirt.git//virtual_machine?ref=1462adf"
 
   hypervisor = merge(var.hypervisor, {
     network_bridge = var.hypervisor.network_bridge
