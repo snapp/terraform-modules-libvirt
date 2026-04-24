@@ -33,6 +33,8 @@ users:
     hashed_passwd: "${root_password}"
     lock_passwd: false
 %{ endif ~}
+%{ else ~}
+users: []
 %{ endif ~}
 %{ if length(runcmd) > 0 ~}
 runcmd:
